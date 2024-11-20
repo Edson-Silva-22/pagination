@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateFilmDto } from './dto/create-film.dto';
 import { UpdateFilmDto } from './dto/update-film.dto';
 import { SearchFilmsDto } from './dto/searchFilms.dto';
@@ -12,8 +12,21 @@ export class FilmsService {
   constructor(
     @InjectModel(Film.name) private readonly filmModel: Model<Film>
   ){}
-  create(createFilmDto: CreateFilmDto) {
-    return 'This action adds a new film';
+  async create(createFilmDto: CreateFilmDto) {
+    try {
+      const filmExist = await this.filmModel.find({ title: createFilmDto.title })
+
+      if (filmExist.length > 0) throw new BadRequestException('Já existe um filme com esse título');
+      
+      const createdFilm = await this.filmModel.create(createFilmDto)
+
+      return createdFilm
+
+    } catch (error) {
+      console.error(error)
+      if (error instanceof BadRequestException) throw error
+      throw new InternalServerErrorException('Devido a um erro interno não foi possível registrar o filme.')
+    }
   }
 
   async findAll(searchFilmsDto: SearchFilmsDto, pagination: PaginationType) {
@@ -52,15 +65,39 @@ export class FilmsService {
     return { items, totalItems };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} film`;
+  async findOne(id: string) {
+    try {
+      const findFilm = await this.filmModel.findById(id)
+      if (!findFilm) throw new BadRequestException('Filme não encontrado');
+      return findFilm;
+    } catch (error) {
+      console.error(error)
+      if (error instanceof BadRequestException) throw error
+      throw new InternalServerErrorException('Devido a um erro interno não foi possível buscar o filme.');
+    }
   }
 
-  update(id: number, updateFilmDto: UpdateFilmDto) {
-    return `This action updates a #${id} film`;
+  async update(id: string, updateFilmDto: UpdateFilmDto) {
+    try {
+      const findFilm = await this.filmModel.findByIdAndUpdate(id, updateFilmDto, { new: true })
+      if (!findFilm) throw new BadRequestException('Filme não encontrado');
+      return findFilm;
+    } catch (error) {
+      console.error(error)
+      if (error instanceof BadRequestException) throw error
+      throw new InternalServerErrorException('Devido a um erro interno não foi possível atualizar o filme.');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} film`;
+  async remove(id: string) {
+    try {
+      const findFilm = await this.filmModel.findByIdAndDelete(id)
+      if (!findFilm) throw new BadRequestException('Filme não encontrado');
+      return findFilm;
+    } catch (error) {
+      console.error(error)
+      if (error instanceof BadRequestException) throw error
+      throw new InternalServerErrorException('Devido a um erro interno não foi possível excluir o filme.');
+    }
   }
 }

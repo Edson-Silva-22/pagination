@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, Put } from '@nestjs/common';
 import { FilmsService } from './films.service';
 import { CreateFilmDto } from './dto/create-film.dto';
 import { UpdateFilmDto } from './dto/update-film.dto';
@@ -10,8 +10,8 @@ export class FilmsController {
   constructor(private readonly filmsService: FilmsService) {}
 
   @Post()
-  create(@Body() createFilmDto: CreateFilmDto) {
-    return this.filmsService.create(createFilmDto);
+  async create(@Body() createFilmDto: CreateFilmDto) {
+    return await this.filmsService.create(createFilmDto);
   }
 
   @Get()
@@ -22,17 +22,17 @@ export class FilmsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.filmsService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.filmsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFilmDto: UpdateFilmDto) {
-    return this.filmsService.update(+id, updateFilmDto);
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateFilmDto: UpdateFilmDto) {
+    return await this.filmsService.update(id, updateFilmDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.filmsService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.filmsService.remove(id);
   }
 }

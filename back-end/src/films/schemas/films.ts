@@ -17,7 +17,8 @@ import mongoose, { Document } from "mongoose";
 })
 export class Film {
   @Prop({
-    required: true
+    required: true,
+    unique: true
   })
   title: string;
 
