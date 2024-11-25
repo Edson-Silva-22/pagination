@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Query, Put } from '@nestjs/
 import { FilmsService } from './films.service';
 import { CreateFilmDto } from './dto/create-film.dto';
 import { UpdateFilmDto } from './dto/update-film.dto';
-import { Pagination, PaginationType } from 'src/utils/decorators/pagination-decorator';
+import { Pagination, PaginationType } from '../utils/decorators/pagination-decorator';
 import { SearchFilmsDto } from './dto/searchFilms.dto';
 
 @Controller('films')
