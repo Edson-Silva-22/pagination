@@ -16,8 +16,7 @@ export class FilmsController {
 
   @Get()
   async findAll(@Pagination() pagination: PaginationType, @Query() searchFilmsDto: SearchFilmsDto) {
-    const { items, totalItems } = await this.filmsService.findAll(searchFilmsDto, pagination);
-    const { page, rows } = pagination;
+    const { items, totalItems, page, rows } = await this.filmsService.findAll(searchFilmsDto, pagination);
     return { items, totalItems, page, rows };
   }
 

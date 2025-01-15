@@ -62,7 +62,7 @@ export class FilmsService {
       .limit(rows)
       .exec();
 
-    return { items, totalItems };
+    return { items, totalItems, page, rows };
   }
 
   async findOne(id: string) {
