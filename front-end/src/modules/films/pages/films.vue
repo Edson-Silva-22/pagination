@@ -1,15 +1,19 @@
 <template>
-  <h1>Films Page</h1>
-  <DataTable 
-    :header
-    :items="films"
-    :metadata
-    v-model:current-page="currentPage"
-  ></DataTable>
+  <InnerPage title="Filmes">
+    <DataTable 
+      :header
+      :items="films"
+      :metadata
+      v-model:current-page="currentPage"
+      :has-filters-label="true"
+      :filters-label="filtersLabels"
+      v-model:title-filter="titleFilter"
+    ></DataTable>
+  </InnerPage>
 </template>
 
 <script setup lang="ts">
-  import type { Metadata } from '@/components/DataTable.vue';
+  import type { FilterLabel, Metadata } from '@/components/DataTable.vue';
   import { useFilmsStore } from '../store';
 
   const filmsStore = useFilmsStore();
@@ -51,11 +55,25 @@
       value:'releaseYear'
     }
   ]
+  const filtersLabels = ref<FilterLabel[]>([
+    {
+      label: 'Título',
+      componentType: 'textField',
+      inputValue: null
+    },
+    {
+      label: 'Categoria',
+      componentType: 'comboBox',
+      items: []
+    }
+  ])
   const currentPage = ref<number>(1)
+  const titleFilter = ref('')
 
   async function findAll() {
     const result = await filmsStore.findAll({
-      page: currentPage.value
+      page: currentPage.value,
+      title: titleFilter.value
     });
     films.value = result.data.data;
     metadata.value = result.data.metadata;
@@ -66,4 +84,5 @@
     await findAll();
   })
   watch(currentPage, async () => await findAll())
+  watch(titleFilter, async () => await findAll())
 </script>

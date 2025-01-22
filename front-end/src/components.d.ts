@@ -8,6 +8,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     DataTable: typeof import('./components/DataTable.vue')['default']
+    DisplayCell: typeof import('./components/InnerPage.vue')['default']
+    InnerPage: typeof import('./components/InnerPage.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

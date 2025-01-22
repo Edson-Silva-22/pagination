@@ -3,7 +3,68 @@
     :headers="props.header"
     :items="props.items"
     :items-length="props.items.length"
+    class="rounded"
   >
+    <template v-slot:top>
+      <div class="mt-3 ml-3 mb-10" v-if="props.items && props.metadata">
+        <!-- Menu de filtragem -->
+        <v-menu 
+          :close-on-content-click="false" 
+          v-if="props.hasFiltersLabel" 
+          v-model="activatorMenu"
+        >
+          <template v-slot:activator="{ props }">
+            <v-btn 
+              color="green" 
+              v-bind="props" 
+              append-icon="mdi-filter"
+              variant="outlined"
+            > Filtrar </v-btn>
+          </template>
+
+          <v-card
+            width="400"
+          >
+            <v-card-title primary-title>Filtragem</v-card-title>
+
+            <v-card-text v-for="(filterLabel, index) in filtersLabel" :key="index">
+              <!-- Filtragem por nome do filme -->
+              <v-row v-if="filterLabel.componentType == 'textField'">
+                <v-col>
+                  <v-text-field
+                    :label="filterLabel.label"
+                    v-model="titleFilter"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+
+              <v-row v-if="filterLabel.componentType == 'comboBox'">
+                <v-col>
+                  <v-combobox
+                    :label="filterLabel.label"
+                    :items="filterLabel.items"
+                  ></v-combobox>
+                </v-col>
+              </v-row>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-btn 
+                color="green"
+                variant="tonal"
+                @click="applyFilters"
+              >Aplicar</v-btn>
+
+              <v-btn 
+                color="red"
+                variant="tonal"
+              >Limpar</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-menu>
+      </div>
+    </template>
+
     <template v-slot:no-data>
       <span> <v-icon>mdi-emoticon-sad</v-icon> Nenhum registro foi encontrado </span>
     </template>
@@ -49,15 +110,31 @@
     totalPages: number,
   }
 
-  const emit = defineEmits(['update:currentPage'])
+  export interface FilterLabel {
+    label: string,
+    componentType: 'textField' | 'comboBox' | 'autoComplete',
+    inputValue?: string | number | null
+    items?: any[]
+  }
+
+  const emit = defineEmits(['update:currentPage', 'update:titleFilter', 'applyFilters'])
   const props = defineProps<{
     header: object[],
-    items: TableItem[]
-    metadata: Metadata
+    items: TableItem[],
+    metadata: Metadata,
+    hasFiltersLabel?: boolean,
+    filtersLabel?: FilterLabel[],
   }>()
+  const titleFilter = ref<string>()
+  const selectedPage = ref(props.metadata.page)
+  const activatorMenu = ref<boolean>(false)
 
   function updatePage(newPage: number) {
     emit('update:currentPage', newPage)
   }
-  const selectedPage = ref(props.metadata.page)
+
+  function applyFilters() {
+    emit('update:titleFilter', titleFilter.value)
+    activatorMenu.value = false
+  }
 </script>
