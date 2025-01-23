@@ -33,16 +33,21 @@
                 <v-col>
                   <v-text-field
                     :label="filterLabel.label"
-                    v-model="titleFilter"
+                    @input="(event:any) => filterLabel.inputValue = event.target.value"
+                    @click:clear="filterLabel.inputValue = null"
+                    clearable
                   ></v-text-field>
                 </v-col>
               </v-row>
 
+              <!-- Filtragem por categoria -->
               <v-row v-if="filterLabel.componentType == 'comboBox'">
                 <v-col>
                   <v-combobox
                     :label="filterLabel.label"
                     :items="filterLabel.items"
+                    v-model="filterLabel.inputValue"
+                    clearable
                   ></v-combobox>
                 </v-col>
               </v-row>
@@ -58,6 +63,7 @@
               <v-btn 
                 color="red"
                 variant="tonal"
+                @click="() => { titleFilter = ''; genreFilter = '';}"
               >Limpar</v-btn>
             </v-card-actions>
           </v-card>
@@ -113,11 +119,14 @@
   export interface FilterLabel {
     label: string,
     componentType: 'textField' | 'comboBox' | 'autoComplete',
-    inputValue?: string | number | null
+    inputValue?: any
     items?: any[]
   }
 
-  const emit = defineEmits(['update:currentPage', 'update:titleFilter', 'applyFilters'])
+  const emit = defineEmits([
+    'update:currentPage', 
+    'applyFilters'
+  ])
   const props = defineProps<{
     header: object[],
     items: TableItem[],
@@ -125,7 +134,8 @@
     hasFiltersLabel?: boolean,
     filtersLabel?: FilterLabel[],
   }>()
-  const titleFilter = ref<string>()
+  const titleFilter = ref<string | null>(null)
+  const genreFilter = ref<string | null>(null)
   const selectedPage = ref(props.metadata.page)
   const activatorMenu = ref<boolean>(false)
 
@@ -134,7 +144,7 @@
   }
 
   function applyFilters() {
-    emit('update:titleFilter', titleFilter.value)
+    emit('applyFilters', props.filtersLabel)
     activatorMenu.value = false
   }
 </script>

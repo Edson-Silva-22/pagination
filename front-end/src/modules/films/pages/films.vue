@@ -7,7 +7,7 @@
       v-model:current-page="currentPage"
       :has-filters-label="true"
       :filters-label="filtersLabels"
-      v-model:title-filter="titleFilter"
+      @apply-filters="(inputValues:FilterLabel[]) => findAll(inputValues)"
     ></DataTable>
   </InnerPage>
 </template>
@@ -43,7 +43,7 @@
       value: 'averageRating'
     },
     {
-      title: "Gêneros",
+      title: "Categoria",
       value: 'genres'
     },
     {
@@ -55,6 +55,7 @@
       value:'releaseYear'
     }
   ]
+  const currentPage = ref<number>(1)
   const filtersLabels = ref<FilterLabel[]>([
     {
       label: 'Título',
@@ -64,25 +65,68 @@
     {
       label: 'Categoria',
       componentType: 'comboBox',
-      items: []
+      items: [
+        "Action",
+        "Adventure",
+        "Animation",
+        "Biography",
+        "Comedy",
+        "Crime",
+        "Documentary",
+        "Drama",
+        "Family",
+        "Fantasy",
+        "Film-Noir",
+        "Game-Show",
+        "History",
+        "Horror",
+        "Music",
+        "Musical",
+        "Mystery",
+        "News",
+        "Reality-TV",
+        "Romance",
+        "Sci-Fi",
+        "Short",
+        "Sport",
+        "Talk-Show",
+        "Thriller",
+        "War",
+        "Western"
+      ],
+      inputValue: null
+    },
+    {
+      label: 'Tipo',
+      componentType: 'comboBox',
+      items: ['Filme', 'Série'],
+      inputValue: null
     }
   ])
-  const currentPage = ref<number>(1)
-  const titleFilter = ref('')
+  
 
-  async function findAll() {
+  async function findAll(inputValues?:FilterLabel[]) {
+    let params = {}
+
+    // Formatando parametros para a requisição
+    if (inputValues) {
+      params = {
+        ...(inputValues[0].inputValue && { title: inputValues[0].inputValue }),
+        ...(inputValues[1].inputValue && { genres: inputValues[1].inputValue }),
+        ...(inputValues[2].inputValue && { type: inputValues[2].inputValue == "Filme" ? 'movie' : 'tvSeries' }),
+      }
+    }
+
     const result = await filmsStore.findAll({
       page: currentPage.value,
-      title: titleFilter.value
+      ...params
     });
     films.value = result.data.data;
     metadata.value = result.data.metadata;
-    console.log(result.data);
   }
 
   onMounted(async () => {
     await findAll();
   })
   watch(currentPage, async () => await findAll())
-  watch(titleFilter, async () => await findAll())
 </script>
