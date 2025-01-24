@@ -33,7 +33,7 @@
                 <v-col>
                   <v-text-field
                     :label="filterLabel.label"
-                    @input="(event:any) => filterLabel.inputValue = event.target.value"
+                    v-model="filterLabel.inputValue"
                     @click:clear="filterLabel.inputValue = null"
                     clearable
                   ></v-text-field>
@@ -63,7 +63,7 @@
               <v-btn 
                 color="red"
                 variant="tonal"
-                @click="() => { titleFilter = ''; genreFilter = '';}"
+                @click="clearAllFilters()"
               >Limpar</v-btn>
             </v-card-actions>
           </v-card>
@@ -84,8 +84,8 @@
 
       <v-pagination
         :length="props.metadata.totalPages"
-        v-model="selectedPage"
-        @update:model-value="updatePage(selectedPage)"
+        v-model="metadata.page"
+        @update:model-value="applyFilters"
         :total-visible="5"
         rounded="circle"
         active-color="green"
@@ -134,17 +134,18 @@
     hasFiltersLabel?: boolean,
     filtersLabel?: FilterLabel[],
   }>()
-  const titleFilter = ref<string | null>(null)
-  const genreFilter = ref<string | null>(null)
-  const selectedPage = ref(props.metadata.page)
   const activatorMenu = ref<boolean>(false)
 
-  function updatePage(newPage: number) {
-    emit('update:currentPage', newPage)
+  //Emitindo envento que retorna os filtros de busca e a página escolhida
+  function applyFilters() {
+    emit('applyFilters', props.filtersLabel, props.metadata.page)
+    activatorMenu.value = false
   }
 
-  function applyFilters() {
-    emit('applyFilters', props.filtersLabel)
-    activatorMenu.value = false
+  //Limpando os filtros e voltando para a página inicial
+  function clearAllFilters() {
+    props.filtersLabel?.map(filterLabel => filterLabel.inputValue = null)
+    props.metadata.page = 1
+    applyFilters()
   }
 </script>

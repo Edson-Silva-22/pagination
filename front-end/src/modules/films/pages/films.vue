@@ -4,10 +4,9 @@
       :header
       :items="films"
       :metadata
-      v-model:current-page="currentPage"
       :has-filters-label="true"
       :filters-label="filtersLabels"
-      @apply-filters="(inputValues:FilterLabel[]) => findAll(inputValues)"
+      @apply-filters="(inputValues:FilterLabel[], newPage:number) => findAll(inputValues, newPage)"
     ></DataTable>
   </InnerPage>
 </template>
@@ -55,7 +54,6 @@
       value:'releaseYear'
     }
   ]
-  const currentPage = ref<number>(1)
   const filtersLabels = ref<FilterLabel[]>([
     {
       label: 'Título',
@@ -104,8 +102,7 @@
     }
   ])
   
-
-  async function findAll(inputValues?:FilterLabel[]) {
+  async function findAll(inputValues?:FilterLabel[], page?:number) {
     let params = {}
 
     // Formatando parametros para a requisição
@@ -118,7 +115,7 @@
     }
 
     const result = await filmsStore.findAll({
-      page: currentPage.value,
+      page,
       ...params
     });
     films.value = result.data.data;
@@ -128,5 +125,4 @@
   onMounted(async () => {
     await findAll();
   })
-  watch(currentPage, async () => await findAll())
 </script>
