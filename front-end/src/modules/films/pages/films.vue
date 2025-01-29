@@ -1,12 +1,13 @@
 <template>
-  <InnerPage title="Filmes">
+  <InnerPage title="Catálogo">
     <DataTable 
       :header
       :items="films"
       :metadata
       :has-filters-label="true"
       :filters-label="filtersLabels"
-      @apply-filters="(inputValues:FilterLabel[], newPage:number) => findAll(inputValues, newPage)"
+      @apply-filters="(inputValues:FilterLabel[], newPage:number, sortByAppleid: any) => findAll(inputValues, newPage, sortByAppleid)"
+      :sortBy
     ></DataTable>
   </InnerPage>
 </template>
@@ -31,11 +32,13 @@
   const header = [
     {
       title: "Título",
-      value: 'title'
+      value: 'title',
+      sortable: true,
+      key: 'title',
     },
     {
       title: "Tipo",
-      key: 'type',
+      value: 'type',
     },
     {
       title: "Nota Média",
@@ -47,11 +50,13 @@
     },
     {
       title: "Votos",
-      value: 'numVotes'
+      value: 'numVotes',
     },
     {
       title: "Ano de Lançamento",
-      value:'releaseYear'
+      value:'releaseYear',
+      sortable: true,
+      key:'releaseYear',
     }
   ]
   const filtersLabels = ref<FilterLabel[]>([
@@ -101,22 +106,30 @@
       inputValue: null
     }
   ])
+  const sortBy = ref<{
+    key: string,
+    order: 'asc' | 'desc',
+  }[]>([])
   
-  async function findAll(inputValues?:FilterLabel[], page?:number) {
-    let params = {}
+  async function findAll(inputValues?:FilterLabel[], page?:number, sortByAppleid?:any) {
+    let params: Record<string, any> = {}
 
-    // Formatando parametros para a requisição
+    // Formatando parametros de filtragem para a requisição
     if (inputValues) {
-      params = {
-        ...(inputValues[0].inputValue && { title: inputValues[0].inputValue }),
-        ...(inputValues[1].inputValue && { genres: inputValues[1].inputValue }),
-        ...(inputValues[2].inputValue && { type: inputValues[2].inputValue == "Filme" ? 'movie' : 'tvSeries' }),
-      }
+      if (inputValues[0].inputValue) params.title = inputValues[0].inputValue
+      if (inputValues[1].inputValue) params.genres = inputValues[1].inputValue
+      if (inputValues[2].inputValue) params.type = inputValues[2].inputValue == "Filme" ? 'movie' : 'tvSeries'
+    }
+
+    // Formatando parametros de ordenação para a requisição
+    if (sortByAppleid && sortByAppleid[0]) {
+      params.sortBy = sortByAppleid[0].key
+      params.sortOrder = sortByAppleid[0].order
     }
 
     const result = await filmsStore.findAll({
-      page,
-      ...params
+      page: page || 1,
+     ...params,
     });
     films.value = result.data.data;
     metadata.value = result.data.metadata;

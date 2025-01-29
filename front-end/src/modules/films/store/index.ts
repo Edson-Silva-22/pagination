@@ -7,6 +7,8 @@ export interface FindAllFilmParams {
   title?: string;
   genres?: string;
   type?: string;
+  sortBy?: string;
+  sortOrder?: number;
 }
 
 export const useFilmsStore = defineStore("films", () => {
@@ -17,6 +19,8 @@ export const useFilmsStore = defineStore("films", () => {
     if (params && params.title) url += `&title=${params?.title}`
     if (params && params.genres) url += `&genres=${params?.genres}`
     if (params && params.type) url += `&type=${params?.type}`
+    if (params && params.sortBy) url += `&sortBy=${params?.sortBy}`
+    if (params && params.sortOrder) url += `&sortOrder=${params?.sortOrder}`
 
     const result = await useApi('get', url)
     return result

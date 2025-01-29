@@ -3,6 +3,8 @@
     :headers="props.header"
     :items="props.items"
     :items-length="props.items.length"
+    v-model:sort-by="sortBy"
+    v-on:update:sort-by="applyFilters"
     class="rounded"
   >
     <template v-slot:top>
@@ -28,7 +30,7 @@
             <v-card-title primary-title>Filtragem</v-card-title>
 
             <v-card-text v-for="(filterLabel, index) in filtersLabel" :key="index">
-              <!-- Filtragem por nome do filme -->
+
               <v-row v-if="filterLabel.componentType == 'textField'">
                 <v-col>
                   <v-text-field
@@ -40,7 +42,6 @@
                 </v-col>
               </v-row>
 
-              <!-- Filtragem por categoria -->
               <v-row v-if="filterLabel.componentType == 'comboBox'">
                 <v-col>
                   <v-combobox
@@ -133,12 +134,23 @@
     metadata: Metadata,
     hasFiltersLabel?: boolean,
     filtersLabel?: FilterLabel[],
+    sortBy: {
+      key: string,
+      order: 'asc' | 'desc',
+    }[]
   }>()
   const activatorMenu = ref<boolean>(false)
+  const sortBy = ref(props.sortBy)
 
   //Emitindo envento que retorna os filtros de busca e a página escolhida
   function applyFilters() {
-    emit('applyFilters', props.filtersLabel, props.metadata.page)
+    //Formatando valores padrões para 1 e -1
+    let newSortBy = sortBy.value.map((value) => {
+      if (value.order == 'asc') return {key: value.key, order: 1}
+      if (value.order == 'desc') return {key: value.key, order: -1}
+    }) 
+
+    emit('applyFilters', props.filtersLabel, props.metadata.page, newSortBy)
     activatorMenu.value = false
   }
 
