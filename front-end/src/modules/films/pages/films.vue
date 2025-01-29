@@ -1,15 +1,19 @@
 <template>
-  <h1>Films Page</h1>
-  <DataTable 
-    :header
-    :items="films"
-    :metadata
-    v-model:current-page="currentPage"
-  ></DataTable>
+  <InnerPage title="Catálogo">
+    <DataTable 
+      :header
+      :items="films"
+      :metadata
+      :has-filters-label="true"
+      :filters-label="filtersLabels"
+      @apply-filters="(inputValues:FilterLabel[], newPage:number, sortByAppleid: any) => findAll(inputValues, newPage, sortByAppleid)"
+      :sortBy
+    ></DataTable>
+  </InnerPage>
 </template>
 
 <script setup lang="ts">
-  import type { Metadata } from '@/components/DataTable.vue';
+  import type { FilterLabel, Metadata } from '@/components/DataTable.vue';
   import { useFilmsStore } from '../store';
 
   const filmsStore = useFilmsStore();
@@ -28,42 +32,110 @@
   const header = [
     {
       title: "Título",
-      value: 'title'
+      value: 'title',
+      sortable: true,
+      key: 'title',
     },
     {
       title: "Tipo",
-      key: 'type',
+      value: 'type',
     },
     {
       title: "Nota Média",
       value: 'averageRating'
     },
     {
-      title: "Gêneros",
+      title: "Categoria",
       value: 'genres'
     },
     {
       title: "Votos",
-      value: 'numVotes'
+      value: 'numVotes',
     },
     {
       title: "Ano de Lançamento",
-      value:'releaseYear'
+      value:'releaseYear',
+      sortable: true,
+      key:'releaseYear',
     }
   ]
-  const currentPage = ref<number>(1)
+  const filtersLabels = ref<FilterLabel[]>([
+    {
+      label: 'Título',
+      componentType: 'textField',
+      inputValue: null
+    },
+    {
+      label: 'Categoria',
+      componentType: 'comboBox',
+      items: [
+        "Action",
+        "Adventure",
+        "Animation",
+        "Biography",
+        "Comedy",
+        "Crime",
+        "Documentary",
+        "Drama",
+        "Family",
+        "Fantasy",
+        "Film-Noir",
+        "Game-Show",
+        "History",
+        "Horror",
+        "Music",
+        "Musical",
+        "Mystery",
+        "News",
+        "Reality-TV",
+        "Romance",
+        "Sci-Fi",
+        "Short",
+        "Sport",
+        "Talk-Show",
+        "Thriller",
+        "War",
+        "Western"
+      ],
+      inputValue: null
+    },
+    {
+      label: 'Tipo',
+      componentType: 'comboBox',
+      items: ['Filme', 'Série'],
+      inputValue: null
+    }
+  ])
+  const sortBy = ref<{
+    key: string,
+    order: 'asc' | 'desc',
+  }[]>([])
+  
+  async function findAll(inputValues?:FilterLabel[], page?:number, sortByAppleid?:any) {
+    let params: Record<string, any> = {}
 
-  async function findAll() {
+    // Formatando parametros de filtragem para a requisição
+    if (inputValues) {
+      if (inputValues[0].inputValue) params.title = inputValues[0].inputValue
+      if (inputValues[1].inputValue) params.genres = inputValues[1].inputValue
+      if (inputValues[2].inputValue) params.type = inputValues[2].inputValue == "Filme" ? 'movie' : 'tvSeries'
+    }
+
+    // Formatando parametros de ordenação para a requisição
+    if (sortByAppleid && sortByAppleid[0]) {
+      params.sortBy = sortByAppleid[0].key
+      params.sortOrder = sortByAppleid[0].order
+    }
+
     const result = await filmsStore.findAll({
-      page: currentPage.value
+      page: page || 1,
+     ...params,
     });
     films.value = result.data.data;
     metadata.value = result.data.metadata;
-    console.log(result.data);
   }
 
   onMounted(async () => {
     await findAll();
   })
-  watch(currentPage, async () => await findAll())
 </script>
