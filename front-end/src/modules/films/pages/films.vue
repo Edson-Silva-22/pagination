@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-  import type { FilterLabel, Metadata } from '@/components/DataTable.vue';
+  import type { FilterLabel, Header, Metadata } from '@/components/DataTable.vue';
   import { useFilmsStore } from '../store';
 
   const filmsStore = useFilmsStore();
@@ -29,36 +29,50 @@
     updatedAt: string,
   }[]>([])
   const metadata = ref<Metadata>({} as Metadata)
-  const header = [
+  const header = ref<Header[]>([
     {
+      placing: 0,
       title: "Título",
       value: 'title',
       sortable: true,
-      key: 'title',
+      key: 'title'
     },
     {
+      placing: 1,
       title: "Tipo",
       value: 'type',
+      key: 'type',
+      sortable: false,
     },
     {
+      placing: 2,
       title: "Nota Média",
-      value: 'averageRating'
+      value: 'averageRating',
+      key: 'averageRating',
+      sortable: false
     },
     {
+      placing: 3,
       title: "Categoria",
-      value: 'genres'
+      value: 'genres',
+      key: 'genres',
+      sortable: false,
     },
     {
+      placing: 4,
       title: "Votos",
       value: 'numVotes',
+      key: 'numVotes',
+      sortable: false
     },
     {
+      placing: 5,
       title: "Ano de Lançamento",
       value:'releaseYear',
       sortable: true,
-      key:'releaseYear',
+      key:'releaseYear'
     }
-  ]
+  ])
   const filtersLabels = ref<FilterLabel[]>([
     {
       label: 'Título',

@@ -1,74 +1,138 @@
 <template>
   <v-data-table-server
-    :headers="props.header"
+    :headers="columnsHeaderView"
     :items="props.items"
     :items-length="props.items.length"
     v-model:sort-by="sortBy"
     v-on:update:sort-by="applyFilters"
-    class="rounded"
+    class="rounded pa-3"
   >
+    <!-- Costumização do header -->
+    <template v-slot:headers="{ columns, isSorted, getSortIcon, toggleSort }">
+      <tr class="bg-green-darken-2">
+        <template v-for="column in columns" :key="column.value">
+          <th>
+            <span class="mr-1">{{ column.title }}</span>
+
+            <!-- Botão de ordenação -->
+            <v-tooltip text="Ordenar" location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-btn 
+                  v-if="column.sortable"
+                  :icon="isSorted(column) ? getSortIcon(column) : 'mdi-minus'" 
+                  size="26" 
+                  variant="tonal"
+                  v-bind="props"
+                  class="mr-1"
+                  @click="() => toggleSort(column)"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+          </th>
+        </template>
+      </tr>
+    </template>
+
     <template v-slot:top>
-      <div class="mt-3 ml-3 mb-10" v-if="props.items && props.metadata">
+      <div class="d-flex ga-2">
         <!-- Menu de filtragem -->
-        <v-menu 
-          :close-on-content-click="false" 
-          v-if="props.hasFiltersLabel" 
-          v-model="activatorMenu"
-        >
-          <template v-slot:activator="{ props }">
-            <v-btn 
-              color="green" 
-              v-bind="props" 
-              append-icon="mdi-filter"
-              variant="outlined"
-            > Filtrar </v-btn>
-          </template>
-
-          <v-card
-            width="400"
+        <div class="mb-10" v-if="props.items && props.metadata">
+          <v-menu 
+            :close-on-content-click="false" 
+            v-if="props.hasFiltersLabel" 
+            v-model="activatorMenu"
           >
-            <v-card-title primary-title>Filtragem</v-card-title>
-
-            <v-card-text v-for="(filterLabel, index) in filtersLabel" :key="index">
-
-              <v-row v-if="filterLabel.componentType == 'textField'">
-                <v-col>
-                  <v-text-field
-                    :label="filterLabel.label"
-                    v-model="filterLabel.inputValue"
-                    @click:clear="filterLabel.inputValue = null"
-                    clearable
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-
-              <v-row v-if="filterLabel.componentType == 'comboBox'">
-                <v-col>
-                  <v-combobox
-                    :label="filterLabel.label"
-                    :items="filterLabel.items"
-                    v-model="filterLabel.inputValue"
-                    clearable
-                  ></v-combobox>
-                </v-col>
-              </v-row>
-            </v-card-text>
-
-            <v-card-actions>
+            <template v-slot:activator="{ props }">
               <v-btn 
-                color="green"
-                variant="tonal"
-                @click="applyFilters"
-              >Aplicar</v-btn>
-
+                color="green" 
+                v-bind="props" 
+                append-icon="mdi-filter"
+                variant="outlined"
+              > Filtrar </v-btn>
+            </template>
+  
+            <v-card
+              width="400"
+            >
+              <v-card-title primary-title>Filtragem</v-card-title>
+  
+              <v-card-text v-for="(filterLabel, index) in filtersLabel" :key="index">
+  
+                <v-row v-if="filterLabel.componentType == 'textField'">
+                  <v-col>
+                    <v-text-field
+                      :label="filterLabel.label"
+                      v-model="filterLabel.inputValue"
+                      @click:clear="filterLabel.inputValue = null"
+                      clearable
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+  
+                <v-row v-if="filterLabel.componentType == 'comboBox'">
+                  <v-col>
+                    <v-combobox
+                      :label="filterLabel.label"
+                      :items="filterLabel.items"
+                      v-model="filterLabel.inputValue"
+                      clearable
+                    ></v-combobox>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+  
+              <v-card-actions>
+                <v-btn 
+                  color="green"
+                  variant="tonal"
+                  @click="applyFilters"
+                >Aplicar</v-btn>
+  
+                <v-btn 
+                  color="red"
+                  variant="tonal"
+                  @click="clearAllFilters()"
+                >Limpar</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
+        </div>
+  
+        <!-- Menu de vizualização de colunas -->
+        <div>
+          <v-menu
+            :close-on-content-click="false" 
+            v-if="props.hasFiltersLabel" 
+            v-model="activatorMenuView"
+          >
+            <template v-slot:activator="{ props }">
               <v-btn 
-                color="red"
-                variant="tonal"
-                @click="clearAllFilters()"
-              >Limpar</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-menu>
+                color="green" 
+                v-bind="props" 
+                append-icon="mdi-view-column"
+                variant="outlined"
+              >Exibir Colunas</v-btn>
+            </template>
+
+            <v-card width="400">
+              <v-card-title primary-title>Exibir Colunas</v-card-title>
+
+              <v-card-text>
+                <!-- alterando o header da tabela de acordo com as colunas selecionadas no checkbox -->
+                <!-- o v-on:update:model-value aplica a função para ordenar as colunas selecionadas para a sua posição correta  -->
+                <v-checkbox 
+                  v-for="column in props.header" 
+                  :key="column.value"
+                  :label="column.title"
+                  :value="column"
+                  density="compact"
+                  v-model="columnsHeaderView"
+                  v-on:update:model-value="() => columnsHeaderView.sort((a,b) => a.placing - b.placing)"
+                ></v-checkbox>
+              </v-card-text>
+            </v-card>
+          </v-menu>
+        </div>
       </div>
     </template>
 
@@ -77,7 +141,7 @@
     </template>
 
     <template v-slot:item.type="{ item }">
-      <v-chip color="green">{{ item.type == 'movie' ? 'Filme' : 'Série' }}</v-chip>
+      <span>{{ item.type == 'movie' ? 'Filme' : 'Série' }}</span>
     </template>
 
     <template v-slot:bottom>
@@ -124,12 +188,20 @@
     items?: any[]
   }
 
+  export interface Header {
+    placing: number,
+    title: string,
+    value: string,
+    sortable?: boolean,
+    key?: string
+  }
+
   const emit = defineEmits([
     'update:currentPage', 
     'applyFilters'
   ])
   const props = defineProps<{
-    header: object[],
+    header: Header[],
     items: TableItem[],
     metadata: Metadata,
     hasFiltersLabel?: boolean,
@@ -140,6 +212,8 @@
     }[]
   }>()
   const activatorMenu = ref<boolean>(false)
+  const activatorMenuView = ref<boolean>(false)
+  const columnsHeaderView = ref(props.header)
   const sortBy = ref(props.sortBy)
 
   //Emitindo envento que retorna os filtros de busca e a página escolhida
