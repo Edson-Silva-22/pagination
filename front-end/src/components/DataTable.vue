@@ -146,15 +146,27 @@
 
     <template v-slot:bottom>
       <v-divider class="mb-4"></v-divider>
-
-      <v-pagination
-        :length="props.metadata.totalPages"
-        v-model="metadata.page"
-        @update:model-value="applyFilters"
-        :total-visible="5"
-        rounded="circle"
-        active-color="green"
-      ></v-pagination>
+      <div class="d-flex justify-center">
+        <p class="mt-4 mr-1">Itens por página:</p>
+        <v-select
+          max-width="90"
+          :items="[5, 10, 20 ,30]" 
+          type="number"
+          v-model="props.metadata.rows"
+          variant="outlined"
+          color="green"
+          @update:model-value="applyFilters"
+        ></v-select>
+  
+        <v-pagination
+          :length="props.metadata.totalPages"
+          v-model="metadata.page"
+          @update:model-value="applyFilters"
+          :total-visible="5"
+          rounded="circle"
+          active-color="green"
+        ></v-pagination>
+      </div>
     </template>
   </v-data-table-server>
 </template>
@@ -224,7 +236,7 @@
       if (value.order == 'desc') return {key: value.key, order: -1}
     }) 
 
-    emit('applyFilters', props.filtersLabel, props.metadata.page, newSortBy)
+    emit('applyFilters', props.filtersLabel, props.metadata.page, newSortBy, props.metadata.rows)
     activatorMenu.value = false
   }
 
