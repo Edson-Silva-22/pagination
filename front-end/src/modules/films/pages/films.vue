@@ -6,7 +6,7 @@
       :metadata
       :has-filters-label="true"
       :filters-label="filtersLabels"
-      @apply-filters="(inputValues:FilterLabel[], newPage:number, sortByAppleid: any) => findAll(inputValues, newPage, sortByAppleid)"
+      @apply-filters="(inputValues:FilterLabel[], newPage:number, sortByAppleid: any, rows:number) => findAll(inputValues, newPage, sortByAppleid, rows)"
       :sortBy
     ></DataTable>
   </InnerPage>
@@ -125,7 +125,7 @@
     order: 'asc' | 'desc',
   }[]>([])
   
-  async function findAll(inputValues?:FilterLabel[], page?:number, sortByAppleid?:any) {
+  async function findAll(inputValues?:FilterLabel[], page?:number, sortByAppleid?:any, rows?:number) {
     let params: Record<string, any> = {}
 
     // Formatando parametros de filtragem para a requisição
@@ -140,6 +140,8 @@
       params.sortBy = sortByAppleid[0].key
       params.sortOrder = sortByAppleid[0].order
     }
+
+    if (rows) params.rows = rows
 
     const result = await filmsStore.findAll({
       page: page || 1,
